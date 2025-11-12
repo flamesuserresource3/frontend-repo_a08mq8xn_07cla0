@@ -15,6 +15,7 @@
   html {
     font-family: var(--font-sans);
     font-feature-settings: "rlig" 1, "calt" 1;
+    background: #0b1020;
   }
 
   body {
@@ -22,7 +23,7 @@
   }
 }
 
-/* Custom utility classes for shadcn/ui patterns */
+/* Custom utility classes and keyframes */
 @layer utilities {
   .animate-in {
     animation-name: animateIn;
@@ -43,4 +44,14 @@
     --tw-exit-translate-x: initial;
     --tw-exit-translate-y: initial;
   }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) }
+  50% { transform: translateY(-10px) }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: .2; transform: scale(1) }
+  50% { opacity: .8; transform: scale(1.6) }
 }
