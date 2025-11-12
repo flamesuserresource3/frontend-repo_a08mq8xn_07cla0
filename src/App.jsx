@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import Sidebar from './components/Sidebar';
 import SpaceBackground from './components/SpaceBackground';
 import { ProfileSection, AboutSection, GallerySection, ProjectsSection, LinksSection } from './components/Sections';
+import { AnimatePresence, motion } from 'framer-motion';
 
 function App() {
   const [current, setCurrent] = useState('profile');
@@ -23,6 +24,29 @@ function App() {
     }
   }, [current]);
 
+  const renderSection = () => {
+    switch (current) {
+      case 'profile':
+        return <ProfileSection />;
+      case 'about':
+        return <AboutSection />;
+      case 'gallery':
+        return <GallerySection />;
+      case 'projects':
+        return <ProjectsSection />;
+      case 'links':
+        return <LinksSection />;
+      default:
+        return <ProfileSection />;
+    }
+  };
+
+  const variants = {
+    initial: { opacity: 0, y: 14, filter: 'blur(4px)' },
+    animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
+    exit: { opacity: 0, y: -14, filter: 'blur(4px)' }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -42,13 +66,19 @@ function App() {
           <div className="flex flex-col md:flex-row gap-6">
             <Sidebar current={current} onChange={setCurrent} />
             <div className="flex-1">
-              <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl p-5 md:p-8 shadow-xl transition-all duration-500">
-                {current === 'profile' && <ProfileSection />}
-                {current === 'about' && <AboutSection />}
-                {current === 'gallery' && <GallerySection />}
-                {current === 'projects' && <ProjectsSection />}
-                {current === 'links' && <LinksSection />}
-              </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={current}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  variants={variants}
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl p-5 md:p-8 shadow-xl"
+                >
+                  {renderSection()}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>
