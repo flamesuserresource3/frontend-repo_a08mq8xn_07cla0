@@ -44,6 +44,24 @@
     --tw-exit-translate-x: initial;
     --tw-exit-translate-y: initial;
   }
+
+  /* Subtle film grain overlay */
+  .noise-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .08;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  /* Soft vignette around edges */
+  .vignette-overlay {
+    position: absolute;
+    inset: -2rem;
+    pointer-events: none;
+    background: radial-gradient(60% 60% at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 100%);
+  }
 }
 
 @keyframes float {
@@ -54,4 +72,29 @@
 @keyframes twinkle {
   0%, 100% { opacity: .2; transform: scale(1) }
   50% { opacity: .8; transform: scale(1.6) }
+}
+
+/* Slow drifting for parallax clouds/nebula */
+@keyframes driftX {
+  0% { transform: translateX(0px) }
+  50% { transform: translateX(20px) }
+  100% { transform: translateX(0px) }
+}
+@keyframes driftY {
+  0% { transform: translateY(0px) }
+  50% { transform: translateY(-16px) }
+  100% { transform: translateY(0px) }
+}
+
+/* Slow spin (rings, subtle rotations) */
+@keyframes spin-slow {
+  0% { transform: rotate(0deg) }
+  100% { transform: rotate(360deg) }
+}
+
+/* Shooting star */
+@keyframes shoot {
+  0% { transform: translate3d(0,0,0) scaleX(0); opacity: 0 }
+  10% { opacity: .9; scale: 1 }
+  100% { transform: translate3d(120vw,-40vh,0) scaleX(1); opacity: 0 }
 }

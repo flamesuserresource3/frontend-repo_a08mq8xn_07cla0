@@ -41,22 +41,23 @@ function App() {
     }
   };
 
+  // Enhanced cinematic variants
   const variants = {
-    initial: { opacity: 0, y: 14, filter: 'blur(4px)' },
-    animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
-    exit: { opacity: 0, y: -14, filter: 'blur(4px)' }
+    initial: { opacity: 0, y: 22, scale: 0.985, filter: 'blur(6px)' },
+    animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
+    exit: { opacity: 0, y: -18, scale: 0.992, filter: 'blur(6px)' }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col text-white">
       {/* Header */}
-      <header className="h-16 sticky top-0 z-20 bg-white/70 backdrop-blur border-b border-gray-200">
+      <header className="h-16 sticky top-0 z-20 bg-black/20 backdrop-blur-xl border-b border-white/10">
         <div className="mx-auto max-w-7xl h-full flex items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-blue-500 text-white font-bold">PF</span>
-            <span className="font-semibold text-gray-800">Portfolio</span>
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-cyan-500 text-white font-bold shadow shadow-cyan-500/20">PF</span>
+            <span className="font-semibold text-white/90 tracking-wide">Portfolio</span>
           </div>
-          <div className="text-sm text-gray-600 hidden sm:block">Menu: Profil, About, Galeri, Projek, Link</div>
+          <div className="text-sm text-white/60 hidden sm:block">Profil • About • Galeri • Projek • Link</div>
         </div>
       </header>
 
@@ -73,9 +74,11 @@ function App() {
                   animate="animate"
                   exit="exit"
                   variants={variants}
-                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                  className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl p-5 md:p-8 shadow-xl"
+                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-5 md:p-8 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.5)]"
                 >
+                  {/* subtle gradient highlight frame */}
+                  <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10 [mask-image:linear-gradient(black,transparent_90%)]" />
                   {renderSection()}
                 </motion.div>
               </AnimatePresence>
@@ -84,10 +87,10 @@ function App() {
         </div>
       </div>
 
-      <footer className="mt-10 border-t border-white/10 bg-white/5 backdrop-blur">
+      <footer className="mt-10 border-t border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-4 py-8 text-center">
-          <p className="text-white/80">© {new Date().getFullYear()} Portofolio Saya — Dibuat dengan cinta dan bintang-bintang.</p>
-          <div className="mt-3 text-xs text-white/60">Terinspirasi oleh alam semesta: Bumi, Mars, Saturnus, Jupiter, dan Black Hole.</div>
+          <p className="text-white/80">© {new Date().getFullYear()} Portofolio Saya — Crafted with precision and starlight.</p>
+          <div className="mt-3 text-xs text-white/60">Tema dinamis terinspirasi Bumi, Mars, Saturnus, Jupiter, dan Black Hole.</div>
         </div>
       </footer>
     </div>
