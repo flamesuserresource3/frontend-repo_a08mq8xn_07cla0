@@ -41,15 +41,23 @@ function App() {
     }
   };
 
-  // Enhanced cinematic variants
+  // Enhanced cinematic variants for card
   const variants = {
     initial: { opacity: 0, y: 22, scale: 0.985, filter: 'blur(6px)' },
     animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
     exit: { opacity: 0, y: -18, scale: 0.992, filter: 'blur(6px)' }
   };
 
+  // Subtle camera dolly for whole stage
+  const camera = {
+    initial: { opacity: 0, y: 8, scale: 0.998 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: -8, scale: 0.998 }
+  };
+
   return (
     <div className="min-h-screen flex flex-col text-white">
+      <a href="#content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 bg-black text-white px-3 py-2 rounded-md">Skip to content</a>
       {/* Header */}
       <header className="h-16 sticky top-0 z-20 bg-black/20 backdrop-blur-xl border-b border-white/10">
         <div className="mx-auto max-w-7xl h-full flex items-center justify-between px-4">
@@ -63,28 +71,38 @@ function App() {
 
       <div className="relative flex-1">
         <SpaceBackground theme={theme} />
-        <div className="relative mx-auto max-w-7xl px-3 sm:px-4 lg:px-6 py-6 md:py-10">
-          <div className="flex flex-col md:flex-row gap-6">
-            <Sidebar current={current} onChange={setCurrent} />
-            <div className="flex-1">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={current}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  variants={variants}
-                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-5 md:p-8 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.5)]"
-                >
-                  {/* subtle gradient highlight frame */}
-                  <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10 [mask-image:linear-gradient(black,transparent_90%)]" />
-                  {renderSection()}
-                </motion.div>
-              </AnimatePresence>
+        <motion.div
+          key={`${current}-camera`}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={camera}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="relative"
+        >
+          <div id="content" className="relative mx-auto max-w-7xl px-3 sm:px-4 lg:px-6 py-6 md:py-10">
+            <div className="flex flex-col md:flex-row gap-6">
+              <Sidebar current={current} onChange={setCurrent} />
+              <div className="flex-1">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={current}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    variants={variants}
+                    transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-5 md:p-8 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.5)]"
+                  >
+                    {/* subtle gradient highlight frame */}
+                    <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10 [mask-image:linear-gradient(black,transparent_90%)]" />
+                    {renderSection()}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <footer className="mt-10 border-t border-white/10 bg-black/20 backdrop-blur-xl">
