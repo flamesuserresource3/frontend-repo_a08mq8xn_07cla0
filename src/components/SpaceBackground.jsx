@@ -1,94 +1,282 @@
 import React from 'react';
 
-// Simple SVG planets with subtle animation
+// Cinematic, textured SVG planets using procedural filters (no external assets)
 const Planet = ({ type }) => {
-  const common = 'animate-[float_10s_ease-in-out_infinite] drop-shadow-[0_10px_30px_rgba(0,0,0,0.35)]';
+  const common = 'animate-[float_10s_ease-in-out_infinite] drop-shadow-[0_12px_40px_rgba(0,0,0,0.45)]';
+
   switch (type) {
     case 'earth':
       return (
-        <svg className={common} width="360" height="360" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className={common} width="380" height="380" viewBox="0 0 380 380" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <radialGradient id="earthGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(120 120) rotate(45) scale(180)">
-              <stop offset="0%" stopColor="#A7F3D0" />
-              <stop offset="100%" stopColor="#2563EB" />
+            {/* Sphere shading (limb darkening) */}
+            <radialGradient id="earthShade" cx="50%" cy="45%" r="55%">
+              <stop offset="0%" stopColor="#9bd7ff" />
+              <stop offset="55%" stopColor="#3aa0e6" />
+              <stop offset="100%" stopColor="#0b2a5a" />
             </radialGradient>
-            <linearGradient id="earthShine" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.55)" />
+
+            {/* Highlight gloss */}
+            <radialGradient id="earthGloss" cx="36%" cy="32%" r="40%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.8)" />
+              <stop offset="30%" stopColor="rgba(255,255,255,0.25)" />
               <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-            </linearGradient>
+            </radialGradient>
+
+            {/* Ocean texture via fractal noise mapped to blue range */}
+            <filter id="oceanNoise" x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox">
+              <feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="3" seed="7" result="noise" />
+              <feColorMatrix in="noise" type="matrix" values="
+                0 0 0 0 0.05
+                0 0 0 0 0.35
+                0 0 0 0 0.75
+                0 0 0 1 0" result="blueNoise" />
+              <feBlend in="SourceGraphic" in2="blueNoise" mode="overlay" />
+            </filter>
+
+            {/* Cloud layer using animated Perlin and displacement for swirl */}
+            <filter id="clouds" x="-30%" y="-30%" width="160%" height="160%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.006" numOctaves="4" seed="11" result="cloud" />
+              <feColorMatrix in="cloud" type="matrix" values="
+                0 0 0 0 1
+                0 0 0 0 1
+                0 0 0 0 1
+                0 0 0 0.85 0" result="whiteCloud" />
+              <feGaussianBlur in="whiteCloud" stdDeviation="0.6" />
+            </filter>
+
+            {/* Land mask: another noise remapped to greens */}
+            <filter id="landTex" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="4" seed="5" result="land" />
+              <feColorMatrix in="land" type="matrix" values="
+                0 0 0 0 0.08
+                0 0 0 0 0.55
+                0 0 0 0 0.22
+                0 0 0 1 0" />
+            </filter>
+
+            <clipPath id="earthClip">
+              <circle cx="190" cy="190" r="150" />
+            </clipPath>
           </defs>
-          <circle cx="150" cy="150" r="120" fill="url(#earthGrad)" />
-          <path d="M50 160c40-20 80 10 120 0 40-10 40-40 80-30" stroke="#0EA5E9" strokeWidth="14" strokeLinecap="round" opacity=".8" />
-          <path d="M70 120c20-10 35 0 60 8 35 12 55 5 85-12" stroke="#22C55E" strokeWidth="12" strokeLinecap="round" opacity=".9" />
-          <circle cx="120" cy="120" r="90" fill="url(#earthShine)" opacity=".25" />
-          <circle cx="150" cy="150" r="120" stroke="rgba(255,255,255,0.25)" strokeWidth="2" />
+
+          {/* Sphere base with shading */}
+          <circle cx="190" cy="190" r="150" fill="url(#earthShade)" />
+
+          {/* Oceans */}
+          <g clipPath="url(#earthClip)" filter="url(#oceanNoise)">
+            <rect x="0" y="0" width="380" height="380" fill="#1677c6" opacity="0.75" />
+          </g>
+
+          {/* Continents (masked patches) */}
+          <g clipPath="url(#earthClip)" filter="url(#landTex)">
+            <rect x="-30" y="-10" width="460" height="420" fill="#2fb35f" opacity="0.8" />
+          </g>
+
+          {/* Subtle coastlines by subtracting land with blur */}
+          <g clipPath="url(#earthClip)">
+            <rect x="-30" y="-10" width="460" height="420" fill="#1f8a46" opacity="0.35" filter="url(#landTex)" />
+          </g>
+
+          {/* Moving cloud layer */}
+          <g clipPath="url(#earthClip)" style={{ mixBlendMode: 'screen' }} className="origin-center animate-[spin-slow_120s_linear_infinite]">
+            <rect x="0" y="0" width="380" height="380" filter="url(#clouds)" opacity="0.55" />
+          </g>
+
+          {/* Polar caps */}
+          <ellipse cx="190" cy="55" rx="70" ry="24" fill="white" opacity="0.12" />
+          <ellipse cx="190" cy="325" rx="80" ry="28" fill="white" opacity="0.09" />
+
+          {/* Gloss highlight and rim light */}
+          <circle cx="190" cy="190" r="150" fill="url(#earthGloss)" />
+          <circle cx="190" cy="190" r="150" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="2" />
         </svg>
       );
+
     case 'mars':
       return (
-        <svg className={common} width="340" height="340" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className={common} width="360" height="360" viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <radialGradient id="marsGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(120 120) rotate(45) scale(180)">
-              <stop offset="0%" stopColor="#FDBA74" />
-              <stop offset="100%" stopColor="#B91C1C" />
+            <radialGradient id="marsShade" cx="48%" cy="42%" r="55%">
+              <stop offset="0%" stopColor="#ffb08a" />
+              <stop offset="55%" stopColor="#d16a3a" />
+              <stop offset="100%" stopColor="#7b2d1d" />
             </radialGradient>
+
+            {/* Terrain noise for rocky texture */}
+            <filter id="marsTex" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="5" seed="9" result="rock" />
+              <feColorMatrix type="matrix" values="
+                1 0 0 0 0.1
+                0 1 0 0 0.04
+                0 0 1 0 0
+                0 0 0 1 0" />
+            </filter>
+
+            {/* Crater emboss effect */}
+            <filter id="craterEmboss" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="2" seed="3" result="t" />
+              <feDiffuseLighting in="t" surfaceScale="1.4" lightingColor="#000" result="diff">
+                <feDistantLight azimuth="225" elevation="45" />
+              </feDiffuseLighting>
+              <feComposite in="diff" in2="SourceGraphic" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
+            </filter>
+
+            <clipPath id="marsClip"><circle cx="180" cy="180" r="150" /></clipPath>
           </defs>
-          <circle cx="150" cy="150" r="120" fill="url(#marsGrad)" />
-          <path d="M60 150c30-30 70-20 120-10" stroke="#7F1D1D" strokeWidth="18" strokeLinecap="round" opacity=".5" />
-          <path d="M90 110c40 0 70 10 110-10" stroke="#991B1B" strokeWidth="10" strokeLinecap="round" opacity=".6" />
-          <circle cx="110" cy="120" r="24" fill="#F97316" opacity=".6" />
-        </svg>
-      );
-    case 'saturn':
-      return (
-        <svg className={common} width="400" height="400" viewBox="0 0 380 320" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <radialGradient id="satGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(160 140) rotate(45) scale(200)">
-              <stop offset="0%" stopColor="#FDE68A" />
-              <stop offset="100%" stopColor="#F59E0B" />
-            </radialGradient>
-          </defs>
-          <ellipse cx="190" cy="150" rx="110" ry="100" fill="url(#satGrad)" />
-          <g className="origin-center animate-[spin-slow_24s_linear_infinite]">
-            <ellipse cx="190" cy="170" rx="170" ry="40" fill="none" stroke="#FBBF24" strokeWidth="10" opacity=".9" transform="rotate(-10 190 170)" />
-            <ellipse cx="190" cy="170" rx="190" ry="52" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2" transform="rotate(-10 190 170)" />
+
+          <circle cx="180" cy="180" r="150" fill="url(#marsShade)" />
+
+          {/* Rocky texture */}
+          <g clipPath="url(#marsClip)" filter="url(#marsTex)">
+            <rect x="-30" y="-30" width="420" height="420" fill="#c45a2c" opacity="0.65" />
           </g>
+
+          {/* Subtle dune bands */}
+          <g clipPath="url(#marsClip)" opacity="0.35">
+            <rect x="0" y="0" width="360" height="360" fill="url(#marsShade)" />
+            <g stroke="#7f2b1b" strokeWidth="8" opacity="0.35">
+              <path d="M-10 120 Q 120 160 370 130" />
+              <path d="M-20 190 Q 140 220 380 210" />
+              <path d="M-10 250 Q 160 280 370 285" />
+            </g>
+          </g>
+
+          {/* Crater-like shading */}
+          <g clipPath="url(#marsClip)" filter="url(#craterEmboss)" opacity="0.45">
+            <rect x="-30" y="-30" width="420" height="420" fill="#713222" />
+          </g>
+
+          {/* Rim light */}
+          <circle cx="180" cy="180" r="150" fill="none" stroke="rgba(255,220,200,0.28)" strokeWidth="2" />
         </svg>
       );
+
     case 'jupiter':
       return (
-        <svg className={common} width="420" height="420" viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className={common} width="420" height="420" viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <radialGradient id="jupGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(150 150) rotate(45) scale(200)">
-              <stop offset="0%" stopColor="#FFE4E6" />
-              <stop offset="100%" stopColor="#FDA4AF" />
+            <radialGradient id="jShade" cx="46%" cy="44%" r="58%">
+              <stop offset="0%" stopColor="#ffe9e3" />
+              <stop offset="60%" stopColor="#efc0a6" />
+              <stop offset="100%" stopColor="#a06f55" />
             </radialGradient>
+
+            {/* Banded flow using turbulence stretched horizontally */}
+            <filter id="jBands" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.008 0.035" numOctaves="4" seed="12" result="noise" />
+              <feColorMatrix type="matrix" values="
+                1 0 0 0 0.93
+                0 1 0 0 0.78
+                0 0 1 0 0.72
+                0 0 0 1 0" />
+            </filter>
+
+            <clipPath id="jClip"><circle cx="210" cy="210" r="170" /></clipPath>
           </defs>
-          <circle cx="180" cy="180" r="150" fill="url(#jupGrad)" />
-          <g stroke="#EA580C" strokeWidth="12" opacity=".55">
-            <path d="M50 120h260" />
-            <path d="M30 160h300" />
-            <path d="M60 200h240" />
-            <path d="M40 240h280" />
+
+          <circle cx="210" cy="210" r="170" fill="url(#jShade)" />
+
+          {/* Flowing bands */}
+          <g clipPath="url(#jClip)" filter="url(#jBands)" className="origin-center animate-[spin-slow_240s_linear_infinite]" opacity="0.65">
+            <rect x="-40" y="-40" width="500" height="500" fill="#e8b9a0" />
           </g>
-          <circle cx="120" cy="180" r="22" fill="#EF4444" opacity=".7" />
+
+          {/* Great Red Spot */}
+          <g clipPath="url(#jClip)">
+            <radialGradient id="grs" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(135 240) rotate(15) scale(50 36)">
+              <stop offset="0%" stopColor="#ff7f6c" />
+              <stop offset="80%" stopColor="#c05a4a" />
+              <stop offset="100%" stopColor="rgba(192,90,74,0)" />
+            </radialGradient>
+            <ellipse cx="135" cy="240" rx="48" ry="34" fill="url(#grs)" opacity="0.9" />
+          </g>
+
+          <circle cx="210" cy="210" r="170" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="2" />
         </svg>
       );
+
+    case 'saturn':
+      return (
+        <svg className={common} width="460" height="420" viewBox="0 0 460 420" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="sShade" cx="48%" cy="44%" r="55%">
+              <stop offset="0%" stopColor="#ffe9a8" />
+              <stop offset="60%" stopColor="#e2b55e" />
+              <stop offset="100%" stopColor="#8c6239" />
+            </radialGradient>
+
+            <filter id="sBands" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.01 0.04" numOctaves="3" seed="21" result="noise" />
+              <feColorMatrix type="matrix" values="
+                1 0 0 0 0.95
+                0 1 0 0 0.85
+                0 0 1 0 0.55
+                0 0 0 1 0" />
+            </filter>
+
+            {/* Ring gradients */}
+            <linearGradient id="ringGold" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#f3d49a" />
+              <stop offset="50%" stopColor="#fff7e1" />
+              <stop offset="100%" stopColor="#e0b868" />
+            </linearGradient>
+
+            <clipPath id="sClip"><circle cx="230" cy="210" r="150" /></clipPath>
+          </defs>
+
+          {/* Planet Body */}
+          <circle cx="230" cy="210" r="150" fill="url(#sShade)" />
+          <g clipPath="url(#sClip)" filter="url(#sBands)" opacity="0.6" className="origin-center animate-[spin-slow_260s_linear_infinite]">
+            <rect x="-40" y="-40" width="540" height="500" fill="#d9b36b" />
+          </g>
+
+          {/* Rings with subtle texture and tilt */}
+          <g className="origin-center animate-[spin-slow_40s_linear_infinite]" opacity="0.9">
+            <g transform="rotate(-14 230 230)">
+              <ellipse cx="230" cy="230" rx="250" ry="70" fill="none" stroke="url(#ringGold)" strokeWidth="14" opacity="0.85" />
+              <ellipse cx="230" cy="230" rx="270" ry="84" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2" />
+              <ellipse cx="230" cy="230" rx="210" ry="60" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="3" />
+              {/* Ring texture stripes */}
+              <g stroke="rgba(255,255,255,0.25)" strokeWidth="1">
+                <ellipse cx="230" cy="230" rx="242" ry="68" />
+                <ellipse cx="230" cy="230" rx="232" ry="64" />
+                <ellipse cx="230" cy="230" rx="262" ry="78" />
+              </g>
+            </g>
+          </g>
+
+          {/* Rim light */}
+          <circle cx="230" cy="210" r="150" fill="none" stroke="rgba(255,255,255,0.26)" strokeWidth="2" />
+        </svg>
+      );
+
     case 'blackhole':
       return (
-        <svg className={common} width="440" height="440" viewBox="0 0 360 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className={common} width="460" height="460" viewBox="0 0 460 460" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <radialGradient id="bhGrad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(180 180) scale(160)">
+            <radialGradient id="bhCore" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#000" />
-              <stop offset="60%" stopColor="#0B1020" />
-              <stop offset="100%" stopColor="#111827" />
+              <stop offset="60%" stopColor="#05060b" />
+              <stop offset="100%" stopColor="#0b1020" />
+            </radialGradient>
+            <radialGradient id="accretion" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(245,158,11,0.9)" />
+              <stop offset="50%" stopColor="rgba(239,68,68,0.35)" />
+              <stop offset="100%" stopColor="rgba(56,189,248,0)" />
             </radialGradient>
           </defs>
-          <circle cx="180" cy="180" r="120" fill="#000" />
-          <circle cx="180" cy="180" r="150" fill="url(#bhGrad)" />
-          <circle cx="180" cy="180" r="175" fill="none" stroke="#6EE7B7" strokeWidth="2" opacity=".2" />
+
+          <circle cx="230" cy="230" r="140" fill="#000" />
+          <circle cx="230" cy="230" r="170" fill="url(#bhCore)" />
+          <g className="origin-center animate-[spin-slow_60s_linear_infinite]" opacity="0.8">
+            <ellipse cx="230" cy="230" rx="210" ry="16" fill="url(#accretion)" />
+            <ellipse cx="230" cy="230" rx="190" ry="8" fill="rgba(59,130,246,0.18)" />
+          </g>
+          <circle cx="230" cy="230" r="190" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="2" />
         </svg>
       );
+
     default:
       return null;
   }
